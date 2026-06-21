@@ -1,0 +1,110 @@
+﻿@model List<WebStoreMVC.Models.Cart.CartItemModel>
+
+<div class="container py-2">
+
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">Кошик</h1>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Фото</th>
+                <th>Назва</th>
+                <th>Ціна</th>
+                <th>Кількість</th>
+                <th>Сума</th>
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        <img src="/images/100_@item.Image"
+                             width="80">
+                    </td>
+
+                    <td>@item.Name</td>
+
+                    <td>@item.Price грн</td>
+
+                    <td>
+                        <form asp-action="UpdateQuantity" method="post" class="d-flex align-items-center gap-1 quantity-form">
+                            <input type="hidden" name="productId" value="@item.ProductId" />
+                            <button type="submit"
+                                    value="@(item.Quantity - 1)"
+                                    class="btn btn-sm btn-outline-secondary removeQuantity">
+                                −
+                            </button>
+
+                            <input type="number"
+                                   name="quantity"
+                                   value="@item.Quantity"
+                                   id="quantity"
+                                   min="1"
+                                   class="form-control form-control-sm text-center quantity"
+                                   style="width: 60px;"
+                                   onchange="this.form.submit()" />
+
+                            <button type="submit"
+                                    value="@(item.Quantity + 1)"
+                                    class="btn btn-sm btn-outline-secondary addQuantity">
+                                +
+                            </button>
+                        </form>
+                    </td>
+
+                    <td>@(item.Price * item.Quantity) грн</td>
+
+                    <td>
+                        <form asp-action="RemoveFromCart" method="post">
+                            <input type="hidden" name="productId" value="@item.ProductId" />
+                            <button type="submit" class="btn btn-sm btn-danger">Видалити</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>
+        Разом:
+        @Model.Sum(x => x.Price * x.Quantity) грн
+    </h3>
+
+    <a asp-controller="Orders" asp-action="Checkout" class="btn btn-success">Оформити замовлення</a>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            document.querySelectorAll(".quantity-form").forEach(form => {
+                const quantityInput = form.querySelector(".quantity");
+
+                form.querySelector(".addQuantity")
+                    .addEventListener("click", () => {
+        
+                        quantityInput.value =
+                            parseInt(quantityInput.value) + 1;
+        
+                        form.submit();
+                    });
+        
+                form.querySelector(".removeQuantity")
+                    .addEventListener("click", () => {
+        
+                        if (parseInt(quantityInput.value) > 1) {
+                            quantityInput.value =
+                                parseInt(quantityInput.value) - 1;
+        
+                            form.submit();
+                        }
+                    });
+
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,42 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebStoreMVC.Data;
+using WebStoreMVC.Mapper;
+
+namespace WebStoreMVC.Controllers
+{
+    public class HomeController(MyContextShopMVC myContext, 
+        CategoryMapper categoryMapper,
+        ProductMapper productMapper) : Controller
+    {
+        public IActionResult Index()
+        {
+            var items = myContext.Categories.ToList();
+            var modal = categoryMapper.CategoriesToCategoryItems(items);
+            return View(modal);
+        }
+
+        [HttpGet]
+        public IActionResult Products(string categorySlug)
+        {
+            var cat = myContext.Categories
+                .SingleOrDefault(c => c.Slug == categorySlug);
+            long catId = cat!.Id;
+
+            ViewBag.CategoryName = cat.Name;
+
+            var items = myContext.Products
+                .Include(x=>x.Category)
+                .Include(x=>x.ProductImages)
+                .Where(x=>x.CategoryId == catId)
+                .ToList();
+            var modal = productMapper.ListProductEntityToItemModels(items);
+            return View(modal);
+        }
+
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+    }
+}
